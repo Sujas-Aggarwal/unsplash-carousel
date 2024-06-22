@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Carousel Practice</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            html {
+                overflow-x: hidden;
+            }
+            .carousel-container {
+                width: 100vw;
+                height: 100vh;
+                overflow-y: hidden;
+                overflow-x: auto;
+                background: #1f1f1f;
+                position: relative;
+                pointer-events: none;
+            }
+            .carousel-container::-webkit-scrollbar {
+                display: none;
+            }
+            .carousel-box {
+                width: 200%;
+                height: 100%;
+                overflow: visible;
+                flex-wrap: nowrap;
+                display: flex;
+                flex-direction: row;
+                justify-content: start;
+                align-items: start;
+            }
+            .img-box {
+                width: 100%;
+                height: 100%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+            .img-box > img {
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+            }
+            .nav-buttons {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                display: flex;
+                padding: 20px;
+                justify-content: space-between;
+                align-items: center;
+                user-select: none;
+                pointer-events: none;
+            }
+            .nav-btn {
+                pointer-events: all;
+                background: white;
+                width: 50px;
+                height: 50px;
+                border-radius: 100%;
+                border: 0;
+                font-size: 20px;
+                font-weight: 900;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                box-shadow: rgba(0, 0, 0, 0.354) 1px 1px 20px;
+                cursor: pointer;
+                user-select: none;
+                outline: none;
+                -webkit-tap-highlight-color: transparent;
+            }
+            .nav-btn:active {
+                scale: 0.98;
+            }
+            .nav-btn > img {
+                width: 20px;
+            }
+            .author-name {
+                background: #0000003b;
+                color: white;
+                padding: 10px;
+                font-family: "Courier New", Courier, monospace;
+                z-index: 1000;
+                white-space: nowrap;
+                bottom: 0;
+                left: 50%;
+                transform: translateX(-50%);
+                position: absolute;
+                pointer-events: all;
+                text-decoration: none;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="carousel-container">
+            <div class="nav-buttons">
+                <button class="nav-btn" id="prev-btn">
+                    <img
+                        style="transform: rotate(180deg)"
+                        src="https://www.svgrepo.com/show/1024/right-arrow.svg"
+                        alt=""
+                    />
+                </button>
+                <button class="nav-btn" id="next-btn">
+                    <img
+                        src="https://www.svgrepo.com/show/1024/right-arrow.svg"
+                        alt=""
+                    />
+                </button>
+            </div>
+            <div class="carousel-box"></div>
+        </div>
+        <script>
+            let currIndex = 0;
+            let items = [];
+            fetch("https://picsum.photos/v2/list?page=1&limit=20")
+                .then((res) => res.json())
+                .then((res) => {
+                    console.log(res);
+                    items = res;
+                    const carouselBoxContainer =
+                        document.getElementsByClassName("carousel-box")[0];
+                    carouselBoxContainer.style.width = `${items.length * 100}%`;
+                    const carouselContent = document.createDocumentFragment();
+                    for (let i = 0; i < items.length; i++) {
+                        const div = document.createElement("div");
+                        div.className = "img-box";
+                        div.id = `img-box-${i}`;
+                        div.style.position = "relative";
+                        const author = document.createElement("a");
+                        author.href = items[i]["url"];
+                        author.target = "_blank";
+                        author.className = "author-name";
+                        author.innerText = items[i]["author"];
+                        const img = document.createElement("img");
+                        img.src = items[i]["download_url"];
+                        div.appendChild(author);
+                        div.appendChild(img);
+                        carouselContent.appendChild(div);
+                    }
+                    carouselBoxContainer.appendChild(carouselContent);
+                });
+            const prevBtn = document.getElementById("prev-btn");
+            const nextBtn = document.getElementById("next-btn");
+            const carousel =
+                document.getElementsByClassName("carousel-container")[0];
+
+            prevBtn.disabled = true;
+            document.onkeydown = (e) => {
+                e.preventDefault();
+                switch (e.key) {
+                    case "ArrowRight":
+                        next();
+                        break;
+                    case "ArrowLeft":
+                        prev();
+                        break;
+                }
+            };
+            prevBtn.onclick = prev;
+            nextBtn.onclick = next;
+            function checkForBtns() {
+                if (currIndex > 0) {
+                    prevBtn.disabled = false;
+                } else {
+                    prevBtn.disabled = true;
+                }
+                if (currIndex < items.length - 1) {
+                    nextBtn.disabled = false;
+                } else {
+                    nextBtn.disabled = true;
+                }
+            }
+            function prev() {
+                if (currIndex <= 0) return;
+                console.log("Left");
+                document
+                    .getElementById(`img-box-${currIndex - 1}`)
+                    .scrollIntoView(true);
+                currIndex--;
+                checkForBtns();
+            }
+            function next() {
+                if (currIndex >= items.length - 1) return;
+                console.log("Right");
+                document
+                    .getElementById(`img-box-${currIndex + 1}`)
+                    .scrollIntoView(true);
+                currIndex++;
+                checkForBtns();
+            }
+        </script>
+    </body>
+</html>
